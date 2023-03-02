@@ -1,7 +1,7 @@
 #!/bin/sh
 # Cover art script for ncmpcpp-ueberzug
 
-# SETTINGS 
+# SETTINGS
 music_library="$HOME/music"
 fallback_image="$HOME/.ncmpcpp/ncmpcpp-ueberzug/img/fallback.png"
 padding_top=3
@@ -25,9 +25,7 @@ font_width=
 
 main() {
     if [ "$hide_while_stopped" = "true" ] && [ "$MPD_PLAYER_STATE" = "stop" ]; then
-        send_to_ueberzug \
-        action "remove" \
-        identifier "mpd_cover"
+        clear_cover_image
         return
     elif [ "$hide_while_stopped" = "false" ] && [ "$MPD_PLAYER_STATE" = "stop" ]; then
         return
@@ -96,6 +94,13 @@ display_cover_image() {
         scaler "forced_cover" \
         scaling_position_x "0.5"
 }
+
+clear_cover_image() {
+    send_to_ueberzug \
+    action "remove" \
+    identifier "mpd_cover"
+}
+
 
 
 # ==== Helper functions =========================================================
