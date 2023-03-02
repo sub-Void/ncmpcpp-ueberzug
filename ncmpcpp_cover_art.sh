@@ -18,6 +18,7 @@ left_aligned="false"
 padding_left=
 
 # Only set this if the geometries are wrong or ncmpcpp shouts at you to do it.
+# Visually select/highlight a character on your terminal, zoom in an image 
 # editor and count how many pixels a character's width and height are.
 font_height=
 font_width=
@@ -195,12 +196,14 @@ guess_terminal_pixelsize() {
 
     python <<END
 import sys, struct, fcntl, termios
+
 def get_geometry():
     fd_pty = sys.stdout.fileno()
     farg = struct.pack("HHHH", 0, 0, 0, 0)
     fretint = fcntl.ioctl(fd_pty, termios.TIOCGWINSZ, farg)
     rows, cols, xpixels, ypixels = struct.unpack("HHHH", fretint)
     return "{} {}".format(xpixels, ypixels)
+
 output = get_geometry()
 f = open("/tmp/ncmpcpp_geometry.txt", "w")
 f.write(output)
