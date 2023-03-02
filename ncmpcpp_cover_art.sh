@@ -1,7 +1,7 @@
 #!/bin/sh
 # Cover art script for ncmpcpp-ueberzug
 
-# SETTINGS
+# SETTINGS 
 music_library="$HOME/music"
 fallback_image="$HOME/.ncmpcpp/ncmpcpp-ueberzug/img/fallback.png"
 padding_top=3
@@ -12,21 +12,28 @@ reserved_playlist_cols=30
 reserved_cols_in_percent="false"
 force_square="false"
 square_alignment="top"
+hide_while_stopped="false"
 
 left_aligned="false"
 padding_left=
 
 # Only set this if the geometries are wrong or ncmpcpp shouts at you to do it.
-# Visually select/highlight a character on your terminal, zoom in an image 
 # editor and count how many pixels a character's width and height are.
 font_height=
 font_width=
 
 main() {
-    kill_previous_instances >/dev/null 2>&1
-    find_cover_image        >/dev/null 2>&1
-    display_cover_image     2>/dev/null
-    detect_window_resizes   >/dev/null 2>&1
+    if [ "$hide_while_stopped" = "true" ] && [ "$MPD_PLAYER_STATE" = "stop" ]; then
+        send_to_ueberzug \
+        action "remove" \
+        identifier "mpd_cover"
+        return
+    elif [ "$hide_while_stopped" = "false" ] && [ "$MPD_PLAYER_STATE" = "stop" ]; then
+        return
+    else
+        find_cover_image        >/dev/null 2>&1
+        display_cover_image     2>/dev/null
+    fi
 }
 
 # ==== Main functions =========================================================
@@ -87,13 +94,6 @@ display_cover_image() {
         synchronously_draw "True" \
         scaler "forced_cover" \
         scaling_position_x "0.5"
-}
-
-detect_window_resizes() {
-    {
-        trap 'display_cover_image' WINCH
-        while :; do sleep .1; done
-    } &
 }
 
 
@@ -195,14 +195,12 @@ guess_terminal_pixelsize() {
 
     python <<END
 import sys, struct, fcntl, termios
-
 def get_geometry():
     fd_pty = sys.stdout.fileno()
     farg = struct.pack("HHHH", 0, 0, 0, 0)
     fretint = fcntl.ioctl(fd_pty, termios.TIOCGWINSZ, farg)
     rows, cols, xpixels, ypixels = struct.unpack("HHHH", fretint)
     return "{} {}".format(xpixels, ypixels)
-
 output = get_geometry()
 f = open("/tmp/ncmpcpp_geometry.txt", "w")
 f.write(output)
